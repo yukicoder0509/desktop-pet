@@ -16,7 +16,7 @@ class Pet:
         # Create label
         self.label = tk.Label(root, bd=0, bg="black")
         self.label.pack()
-        self.label.bind("<Button-1>", self.on_click)
+        self.label.bind("<Button-1>", self.pause)
 
         # create frames
         self.walk_left_frames = [tk.PhotoImage(file=self.imgFolderPath+'walkleft.gif',format = 'gif -index %i' %(i)) for i in range(8)]
@@ -74,7 +74,7 @@ class Pet:
         else:
             self.update_id = self.root.after(100, self.walk_left)
     
-    def on_click(self, event):
+    def pause(self, event):
         self.root.after_cancel(self.update_id)
         if self.xSpeed < 0:
             self.update_id = self.root.after(1000, self.walk_left)
