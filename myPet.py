@@ -16,13 +16,14 @@ class Pet:
         # Create label
         self.label = tk.Label(root, bd=0, bg="black")
         self.label.pack()
+        self.label.bind("<Button-1>", self.on_click)
 
         # create frames
         self.walk_left_frames = [tk.PhotoImage(file=self.imgFolderPath+'walkleft.gif',format = 'gif -index %i' %(i)) for i in range(8)]
         self.walk_right_frames = [tk.PhotoImage(file=self.imgFolderPath+'walkright.gif',format = 'gif -index %i' %(i)) for i in range(8)]
 
         #start the update
-        self.walk_right()
+        self.update_id = self.walk_right()
 
     def windowPosStr(self):
         return f"+{self.windowpos[0]}+{self.windowpos[1]}"
@@ -46,9 +47,9 @@ class Pet:
             self.xSpeed = 5
 
         if self.xSpeed < 0:
-            self.root.after(100, self.walk_left)
+            self.update_id = self.root.after(100, self.walk_left)
         else:
-            self.root.after(100, self.walk_right)
+            self.update_id = self.root.after(100, self.walk_right)
     
     def walk_right(self):
         if self.curFrameIdx == len(self.walk_right_frames):
@@ -69,9 +70,16 @@ class Pet:
             self.xSpeed = 5
 
         if self.xSpeed > 0:
-            self.root.after(100, self.walk_right)
+            self.update_id = self.root.after(100, self.walk_right)
         else:
-            self.root.after(100, self.walk_left)
+            self.update_id = self.root.after(100, self.walk_left)
+    
+    def on_click(self, event):
+        self.root.after_cancel(self.update_id)
+        if self.xSpeed < 0:
+            self.update_id = self.root.after(1000, self.walk_left)
+        else:
+            self.update_id = self.root.after(1000, self.walk_right)
 
 
 # create root window
