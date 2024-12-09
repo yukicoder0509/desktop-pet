@@ -1,4 +1,6 @@
 import tkinter as tk
+from Physics.ProjectileMotion import routeByTop
+from pynput.mouse import Controller
 
 class Pet:
     def __init__(self, root:tk.Tk, startPos:list):
@@ -8,6 +10,7 @@ class Pet:
         self.windowpos = startPos
         self.xSpeed = 5
         self.imageSize = "100x100"
+        self.mousePos = [0,0]
         
         # Get screen size
         self.screen_width = root.winfo_screenwidth()
@@ -24,6 +27,13 @@ class Pet:
 
         #start the update
         self.update_id = self.walk_right()
+    
+    def get_mouse_pos(self):
+        mouse = Controller()
+        position = mouse.position
+        self.mousePos = [position[0], position[1]]
+        print("cat at" ,self.windowpos)
+        print("mouse at" ,self.mousePos)
 
     def windowPosStr(self):
         return f"+{self.windowpos[0]}+{self.windowpos[1]}"
@@ -74,12 +84,30 @@ class Pet:
         else:
             self.update_id = self.root.after(100, self.walk_left)
     
+    def jumpByTop(self, positions):
+        if positions == None:
+            # get mouse position and generate a route by it
+            self.get_mouse_pos()
+            curPos = (self.windowpos[0], self.windowpos[1])
+            topPos = (self.mousePos[0], self.mousePos[1])
+            gravity = 5
+            samplePoint = 10
+            positions = routeByTop(curPos, topPos, gravity, samplePoint)
+            self.update_id = self.root.after(100, lambda: self.jumpByTop(positions))
+        
+        else:
+            if len(positions) == 0:
+                self.update_id = self.root.after(1000, self.walk_right)
+                return
+            # update the window position
+            self.windowpos = [int(positions[0][0]), int(positions[0][1])]
+            self.root.geometry(self.imageSize + self.windowPosStr())
+            positions = positions[1:]
+            self.update_id = self.root.after(100, lambda: self.jumpByTop(positions))
+
     def pause(self, event):
         self.root.after_cancel(self.update_id)
-        if self.xSpeed < 0:
-            self.update_id = self.root.after(1000, self.walk_left)
-        else:
-            self.update_id = self.root.after(1000, self.walk_right)
+        self.update_id = self.root.after(2000, lambda: self.jumpByTop(None))
 
 
 # create root window
